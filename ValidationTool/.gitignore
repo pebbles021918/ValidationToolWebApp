@@ -1,0 +1,38 @@
+﻿# Ignore build output
+bin/
+obj/
+*.dll
+*.exe
+
+# Ignore user-specific & IDE files
+*.user
+*.suo
+.vscode/
+.vs/
+.idea/
+
+# Ignore configuration secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Ignore logs and system files
+*.log
+*.DS_Store
+Thumbs.db
+
+# Ignore publish and debug folders
+wwwroot/dist/
+wwwroot/node_modules/
+.publish/
+node_modules/
+
+# Ignore Git backup/conflict files
+*.orig
+*.rej
+
+# Ignore nested .git folders (accidental repo-inside-repo)
+*.git/
+
+# Optional: ignore full json files if you're working with other secrets
+# *.json

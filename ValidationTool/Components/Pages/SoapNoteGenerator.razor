@@ -1,0 +1,142 @@
+﻿@page "/soapGenerator"
+@inject ChatGptService ChatGptService
+@inject IJSRuntime JS
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link href="css/StyleSheet.css" rel="stylesheet" />
+
+<div class="container mt-4">
+    <!-- Full-width Title Section -->
+    <div class="w-100 text-center text-dark fw-bold py-3" style="background-color: #e6e6fa;">
+        <h2 class="mb-0">Medical Notes Validation Tool</h2>
+    </div>
+
+    <!-- Full-Width Container -->
+    <div class="container-fluid mt-4">
+        <div class="row justify-content-center align-items-start mt-4 gx-4">
+            <!-- Left Section: Input & Upload -->
+            <div class="col-lg-5 col-md-6">
+                <div class="p-4 rounded shadow-lg" style="background-color: #f3e8ff; width: 100%;">
+                    <p class="fw-bold">
+                        <span class="text-dark">Note:</span> Accepted Format is <span class="badge bg-primary">.txt</span>
+                    </p>
+
+                    <!-- File Upload -->
+                    <InputFile OnChange="HandleFileUpload" class="form-control mb-3" accept=".txt" />
+
+                    <!-- Text Input -->
+<textarea class="form-control mb-3" @bind="manualText" rows="10" placeholder="Write your medical note here..."></textarea>
+
+                    <!-- Run Validator Button -->
+                    <button type="button" class="btn btn-secondary mt-2 w-100 p-2" @onclick="RunValidation">Run Validation</button>
+                </div>
+            </div>
+
+            <!-- Right Section: Results -->
+            <div class="col-lg-7 col-md-6">
+                <div class="p-4 rounded shadow-sm border" style="width: 100%;">
+                    <h4 class="fw-bold text-center text-secondary mb-3">Results</h4>
+
+                    @if (!string.IsNullOrEmpty(validationResult))
+                    {
+    <pre class="text-secondary">@validationResult</pre>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Validation results will appear here.</p>
+                    }
+
+                    <!-- Validation Score -->
+                    <div class="progress mt-3" style="height: 20px;">
+                        <div class="progress-bar bg-success fw-bold"
+                             role="progressbar"
+                             style="width: @(validationScore)%; font-size: 14px;"
+                             aria-valuenow="@validationScore"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            @validationScore% Valid
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="helloModal" tabindex="-1" aria-labelledby="helloModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helloModalLabel">Validation Started</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Your input is being validated. Please wait...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+@code {
+    private string uploadedText = "";
+    private string manualText = "";
+    private string validationResult = "";
+    private string fileName = "No file selected";
+    private int validationScore = 0;
+
+    // Handle File Upload
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var reader = new StreamReader(stream);
+            uploadedText = await reader.ReadToEndAsync();
+            fileName = file.Name;
+
+            Console.WriteLine($"✅ File '{fileName}' uploaded successfully.");
+        }
+    }
+
+    private async Task RunValidation()
+    {
+        await JS.InvokeVoidAsync("bootstrapInterop.showModal", "#helloModal");
+        Console.WriteLine("RunValidation triggered!");
+
+        string combinedText = $"{uploadedText}\n{manualText}".Trim();
+        Console.WriteLine($"Combined Text Sent to ChatGPT: {combinedText}");
+
+        if (string.IsNullOrWhiteSpace(combinedText))
+        {
+            validationResult = "⚠ No file uploaded or empty input.";
+            validationScore = 0;
+            Console.WriteLine("⚠ Validation failed: No input provided.");
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine("Sending request to ChatGPT API...");
+            validationResult = await ChatGptService.GenerateSoapNote(combinedText);
+            Console.WriteLine($"ChatGPT Response: {validationResult}");
+
+            validationScore = 100; // Placeholder — add logic to calculate score if needed
+        }
+        catch (Exception ex)
+        {
+            validationResult = $"⚠ Error calling ChatGPT: {ex.Message}";
+            Console.WriteLine($"❌ ChatGPT API Error: {ex.Message}");
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

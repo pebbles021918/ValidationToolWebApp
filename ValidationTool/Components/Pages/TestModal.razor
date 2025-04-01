@@ -1,0 +1,30 @@
+﻿@page "/testmodal"
+@inject IJSRuntime JS
+
+<h3>🔍 Modal Test Page</h3>
+
+<button class="btn btn-primary" @onclick="ShowModal">Show Modal</button>
+
+<div class="modal fade" id="helloModal" tabindex="-1" aria-labelledby="helloModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helloModalLabel">It works! 🎉</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                If you see this, the JS interop and modal are working.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task ShowModal()
+    {
+        await JS.InvokeVoidAsync("bootstrapInterop.showModal", "#helloModal");
+    }
+}
