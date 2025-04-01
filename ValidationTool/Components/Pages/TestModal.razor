@@ -25,6 +25,8 @@
 @code {
     private async Task ShowModal()
     {
+        await JS.InvokeVoidAsync("alert", "Interop is working!");
         await JS.InvokeVoidAsync("bootstrapInterop.showModal", "#helloModal");
     }
+
 }
