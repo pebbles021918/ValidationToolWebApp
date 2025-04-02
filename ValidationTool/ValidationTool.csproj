@@ -15,4 +15,10 @@
     <PackageReference Include="Microsoft.AspNetCore.CookiePolicy" Version="2.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\bootstrap\bootstrap.bundle.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
